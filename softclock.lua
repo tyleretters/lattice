@@ -15,8 +15,12 @@ function init()
   my_clock_id = my_clock:run()
 
   -- user definable callbacks
-  my_clock.advance_event = function(transport) print("advance event", transport) end
-  my_clock.pulse_event = function(transport) print("pulse event", transport) end
+  my_clock.advance_event = function(transport)
+    print("advance event", transport)
+  end
+  my_clock.pulse_event = function(transport)
+    -- print("pulse event", transport)
+  end
 
   -- make another clock
   -- my_other_clock_is_a_seiko = Softclock:new(8)

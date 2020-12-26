@@ -1,16 +1,18 @@
 --  module for creating collections of soft-timers based on a single fast "superclock"
 --
 -- @module Softclock
--- @release v1.0.0
+-- @dev v1.0.1
 -- @author ezra & tyleretters
 
 local Softclock = {}
 
 --- instantiate a new softclock
 -- @tparam[opt] number ppqn the number of pulses per quarter note of this superclock
-function Softclock:new(ppqn)
+-- @tparam[opt] number meter number of quarter notes per measure
+function Softclock:new(ppqn, meter)
   local s = setmetatable({}, { __index = Softclock })
   s.ppqn = ppqn ~= nil and ppqn or 128
+  s.meter = meter ~= nil and meter or 4
   s.clock_id = nil
   s.clocks = {}
   s.transport = 0
@@ -35,17 +37,16 @@ function Softclock.pulse(s)
     -- really wish there was a continue statment...
     if s.is_playing then
       s.transport = s.transport + 1
-      if s.advance_event ~= nil and s.transport % s.ppqn == 1 then
+      if s.advance_event ~= nil and s.transport % (s.ppqn * s.meter) == 1 then
         s.advance_event(s.transport)
       end
       for id, clock in pairs(s.clocks) do
         if clock.is_playing then
           -- print might need to check if not nil for race conditions with remove()
-          clock.phase_pulses = clock.phase_pulses + 1    
-          -- asumption: subclock ppqn is > 1 pulse
-          if clock.phase_pulses > clock.ppqn_pulses then
-              clock.phase_pulses = clock.phase_pulses - clock.ppqn_pulses
-              clock.event(clock.phase_pulses)
+          clock.phase = clock.phase + 1
+          if clock.phase > (clock.division * s.ppqn * s.meter) then
+              clock.phase = clock.phase - (clock.division * s.ppqn * s.meter)
+              clock.event(clock.phase)
           end
         end
       end
@@ -58,15 +59,15 @@ end
 
 --- add a "subclock" to this softclock
 -- @tparam string id unique identifier for this subclock
--- @tparam number ppqn the ppqn of the subclock
+-- @tparam number division the division of the subclock
 -- @tparam function event callback event
 -- @tparam[opt] boolean is the subclock playing?
-function Softclock:add(id, ppqn, event, playing)
+function Softclock:add(id, division, event, playing)
     local c = {} -- new subclock table
-    c.phase_pulses = 0
-    c.ppqn_pulses = ppqn / (1/self.ppqn)
+    c.division = division
     c.event = event
-    c.is_playing = playing ~= nil and playing or true
+    c.is_playing = (playing == nil) and true or playing
+    c.phase = 0
     self.clocks[id] = c
 end
 
@@ -77,11 +78,8 @@ function Softclock:remove(id)
 end
 
 --- change the ppqn of the softclock while running
--- @tparam number ppqn the ppqn of the superclock, in seconds
+-- @tparam number ppqn the ppqn of the superclock
 function Softclock:change_ppqn(ppqn)
-  for id, clock in pairs(self.clocks) do
-    clock.ppqn_pulses = (clock.ppqn_pulses * (1/self.ppqn)) / ppqn
-  end
   self.ppqn = ppqn
 end
 
