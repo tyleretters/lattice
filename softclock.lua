@@ -5,11 +5,11 @@ Softclock = include("lib/Softclock")
 function init()
   -- basic softclock usage
   my_clock = Softclock:new(8)
-  my_clock:add("a", 1/2, function() print("half notes") end)
-  my_clock:add("b", 1/4, function() print("quarter notes") end)
+  subclock_a = my_clock:add(1/2, function() print("half notes") end)
+  subclock_b = my_clock:add(1/4, function() print("quarter notes") end)
 
   -- optionally add a clock that is disabled
-  my_clock:add("c", 1/8, function() print("eighth notes") end, false)
+  subclock_c = my_clock:add( 1/8, function() print("eighth notes") end, false)
 
   -- run the clock
   my_clock_id = my_clock:run()
@@ -18,14 +18,9 @@ function init()
   my_clock.advance_event = function(transport)
     print("advance event", transport)
   end
-  my_clock.pulse_event = function(transport)
-    -- print("pulse event", transport)
+  my_clock.pulse_event = function()
+    -- print("pulse event")
   end
-
-  -- make another clock
-  -- my_other_clock_is_a_seiko = Softclock:new(8)
-  -- my_other_clock_is_a_seiko:add("a", 1/3, function() print("toot") end)
-  -- my_other_clock_is_a_seiko_id = my_other_clock_is_a_seiko:run()
 
   -- demo stuff
   screen_dirty = true
@@ -35,9 +30,9 @@ end
 function key(k, z)
   if z == 0 then return end
   if k == 2 then
-    my_clock:toggle_subclock("b")
+    my_clock:toggle_subclock(subclock_a)
   elseif k == 3 then
-    my_clock:toggle_subclock("c")
+    my_clock:toggle_subclock(subclock_b)
   end
 
   -- more api
@@ -48,12 +43,12 @@ function key(k, z)
   -- my_clock:toggle()
 
   -- individual clock controls
-  -- my_clock:stop_subclock("a")
-  -- my_clock:start_subclock("a")
-  -- my_clock:toggle_subclock("a")
+  -- my_clock:stop_subclock(subclock_a)
+  -- my_clock:start_subclock(subclock_a)
+  -- my_clock:toggle_subclock(subclock_a)
 
   -- remove subclocks
-  -- my_clock:remove_subclock("a")
+  -- my_clock:remove(subclock_a)
   -- my_clock:clear()
 end
 
@@ -63,9 +58,7 @@ function enc(e, d)
 end
 
 function cleanup()
-  -- encapuslated cleanup
   my_clock:cancel()
-  -- my_other_clock_is_a_seiko:cancel()
 end
 
 -- screen stuff

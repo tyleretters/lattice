@@ -1,7 +1,7 @@
 --  module for creating collections of soft-timers based on a single fast "superclock"
 --
 -- @module Softclock
--- @dev v1.0.1
+-- @dev v1.0.2
 -- @author ezra & tyleretters
 
 local Softclock = {}
@@ -58,23 +58,24 @@ function Softclock.pulse(s)
 end 
 
 --- add a "subclock" to this softclock
--- @tparam string id unique identifier for this subclock
 -- @tparam number division the division of the subclock
 -- @tparam function event callback event
 -- @tparam[opt] boolean is the subclock playing?
-function Softclock:add(id, division, event, playing)
-    local c = {} -- new subclock table
-    c.division = division
-    c.event = event
-    c.is_playing = (playing == nil) and true or playing
-    c.phase = 0
-    self.clocks[id] = c
+function Softclock:add(division, event, playing)
+  local c = {} -- new subclock table
+  c.division = division
+  c.event = event
+  c.is_playing = (playing == nil) and true or playing
+  c.phase = 0
+  c.id = #self.clocks + 1
+  self.clocks[c.id] = c
+  return c
 end
 
 --- remove a subclock from this softclock
--- @tparam string unique identifier for this subclock
-function Softclock:remove(id)
-  self.clocks[id] = nil
+-- @tparam table subclock
+function Softclock:remove(subclock)
+  self.clocks[subclock.id] = nil
 end
 
 --- change the ppqn of the softclock while running
@@ -104,21 +105,21 @@ function Softclock:toggle()
 end
 
 --- start a subclock
--- @tparam string id unique identifier for this subclock
-function Softclock:start_subclock(id)
-  self.clocks[id].is_playing = true
+-- @tparam table subclock
+function Softclock:start_subclock(subclock)
+  self.clocks[subclock.id].is_playing = true
 end
 
 --- stop a subclock
--- @tparam string id unique identifier for this subclock
-function Softclock:stop_subclock(id)
-  self.clocks[id].is_playing = false
+-- @tparam table subclock
+function Softclock:stop_subclock(subclock)
+  self.clocks[subclock.id].is_playing = false
 end
 
 --- toggle a subclock
--- @tparam string id unique identifier for this subclock
-function Softclock:toggle_subclock(id)
-  self.clocks[id].is_playing = not self.clocks[id].is_playing
+-- @tparam table subclock
+function Softclock:toggle_subclock(subclock)
+  self.clocks[subclock.id].is_playing = not self.clocks[subclock.id].is_playing
 end
 
 return Softclock
