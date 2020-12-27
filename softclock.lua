@@ -4,14 +4,14 @@ Softclock = include("lib/Softclock")
 
 function init()
   -- basic softclock usage
-  my_clock = Softclock:new(8)
-  subclock_a = my_clock:add(1/2, function() print("half notes") end)
-  subclock_b = my_clock:add(1/4, function() print("quarter notes") end)
+  my_clock = Softclock:new(1, 8)
+  -- subclock_a = my_clock:add(1/2, function() print("half notes") end)
+  -- subclock_b = my_clock:add(1/4, function() print("quarter notes") end)
 
-  -- optionally add a clock that is disabled
-  subclock_c = my_clock:add( 1/8, function() print("eighth notes") end, false)
+  -- -- optionally add a clock that is disabled
+  -- subclock_c = my_clock:add( 1/8, function() print("eighth notes") end, false)
 
-  -- run the clock
+  -- -- run the clock
   my_clock_id = my_clock:run()
 
   -- user definable callbacks

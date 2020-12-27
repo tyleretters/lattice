@@ -1,18 +1,18 @@
 --  module for creating collections of soft-timers based on a single fast "superclock"
 --
 -- @module Softclock
--- @dev v1.0.2
+-- @dev v1.0.3
 -- @author ezra & tyleretters
 
 local Softclock = {}
 
 --- instantiate a new softclock
--- @tparam[opt] number ppqn the number of pulses per quarter note of this superclock
 -- @tparam[opt] number meter number of quarter notes per measure
-function Softclock:new(ppqn, meter)
+-- @tparam[opt] number ppqn the number of pulses per quarter note of this superclock
+function Softclock:new(meter, ppqn)
   local s = setmetatable({}, { __index = Softclock })
-  s.ppqn = ppqn ~= nil and ppqn or 128
   s.meter = meter ~= nil and meter or 4
+  s.ppqn = ppqn ~= nil and ppqn or 128
   s.clock_id = nil
   s.clocks = {}
   s.transport = 0
