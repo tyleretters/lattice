@@ -1,6 +1,7 @@
 -- lattice wip
 
-lattice = include("lib/lattice")
+-- lattice = include("lib/lattice")
+lattice = require("lattice")
 
 function init()
   -- basic lattice usage
