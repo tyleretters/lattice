@@ -1,29 +1,36 @@
 -- lattice wip
 
--- lattice = include("lib/lattice")
-lattice = require("lattice")
+lattice = include("lib/lattice")
+-- lattice = require("lattice")
 
 function init()
-  -- basic lattice usage
+  -- basic lattice usage (uses defaults)
   my_lattice = lattice:new()
+  
+  -- named params, each optional
+  my_lattice = lattice:new{
+    meter = 4,
+    ppqn = 96,
+    callback = function(t) print("transport position:", t) end
+  }
 
-  -- make some tracks
-  track_a = my_lattice:new_track(1/2, function() print("half notes") end)
-  track_b = my_lattice:new_track(1/4, function() print("quarter notes") end)
-
-  -- optionally add a track that is disabled
-  track_c = my_lattice:new_track(1/8, function() print("eighth notes") end, false)
+  -- make some patterns
+  pattern_a = my_lattice:new_pattern{
+    division = 1/2,
+    callback = function() print("half notes") end
+  }
+  pattern_b = my_lattice:new_pattern{
+    division = 1/4,
+    callback = function() print("quarter notes") end
+  }
+  pattern_c = my_lattice:new_pattern{
+    division = 1/8,
+    callback = function() print("eighth notes") end,
+    enabled = false
+  }
 
   -- start the lattice
   my_lattice:start()
-
-  -- user definable callbacks
-  my_lattice.downbeat = function(transport)
-    print("downbeat", transport)
-  end
-
-  -- another one, but in in 5/4 and 128 ppqn
-  -- my_other_lattice = lattice:new(5, 128)
 
   -- demo stuff
   screen_dirty = true
@@ -33,28 +40,30 @@ end
 function key(k, z)
   if z == 0 then return end
   if k == 2 then
-    track_a.toggle()
-    track_b.toggle()
+    pattern_a:toggle()
+    pattern_b:toggle()
   elseif k == 3 then
-    track_c.toggle()
+    pattern_c:toggle()
   end
 
   -- more api
 
-  -- global clock controls
+  -- global lattice controls
   -- my_lattice:stop()
   -- my_lattice:start()
   -- my_lattice:toggle()
   -- my_lattice:destroy()
+  -- my_lattice:destroy_pattern(pattern_a)
   -- my_lattice:set_meter(7)
   -- my_lattice:set_ppqn(48)
+  -- my_lattice:set_callback(function() print("change the callback") end)
 
-  -- individual track controls
-  -- track_a.stop()
-  -- track_a.start()
-  -- track_a.toggle()
-  -- track_a.destroy()
-  -- track_a.set_division(1/7)
+  -- individual pattern controls
+  -- pattern_a:stop()
+  -- pattern_a:start()
+  -- pattern_a:toggle()
+  -- pattern_a:set_division(1/7)
+  -- pattern_a:set_callback(function() print("change the callback") end)
 
 end
 
