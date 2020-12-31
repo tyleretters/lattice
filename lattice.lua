@@ -8,24 +8,28 @@ function init()
   my_lattice = lattice:new()
   
   -- named params, each optional
-  my_lattice = lattice:new{
-    meter = 4,
-    ppqn = 96,
-    callback = function(t) print("transport position:", t) end
+  another_lattice = lattice:new{
+    auto = false,
+    meter = 5,
+    ppqn = 128
   }
 
   -- make some patterns
   pattern_a = my_lattice:new_pattern{
-    division = 1/2,
-    callback = function() print("half notes") end
+    callback = function(t) print("whole notes", t) end,
+    division = 1
   }
   pattern_b = my_lattice:new_pattern{
-    division = 1/4,
-    callback = function() print("quarter notes") end
+    callback = function(t) print("half notes", t) end,
+    division = 1/2
   }
   pattern_c = my_lattice:new_pattern{
+    callback = function(t) print("quarter notes", t) end,
+    division = 1/4
+  }
+  pattern_d = my_lattice:new_pattern{
+    callback = function(t) print("eighth notes", t) end,
     division = 1/8,
-    callback = function() print("eighth notes") end,
     enabled = false
   }
 
@@ -53,15 +57,13 @@ function key(k, z)
   -- my_lattice:start()
   -- my_lattice:toggle()
   -- my_lattice:destroy()
-  -- my_lattice:destroy_pattern(pattern_a)
   -- my_lattice:set_meter(7)
-  -- my_lattice:set_ppqn(48)
-  -- my_lattice:set_callback(function() print("change the callback") end)
 
   -- individual pattern controls
   -- pattern_a:stop()
   -- pattern_a:start()
   -- pattern_a:toggle()
+  -- pattern_a:destroy()
   -- pattern_a:set_division(1/7)
   -- pattern_a:set_callback(function() print("change the callback") end)
 
