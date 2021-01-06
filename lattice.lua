@@ -1,7 +1,7 @@
 -- lattice wip
 
-lattice = include("lib/lattice")
--- lattice = require("lattice")
+-- lattice = include("lib/lattice")
+lattice = require("lattice")
 
 function init()
   -- basic lattice usage (uses defaults)
@@ -16,19 +16,19 @@ function init()
 
   -- make some patterns
   pattern_a = my_lattice:new_pattern{
-    callback = function(t) print("whole notes", t) end,
+    action = function(t) print("whole notes", t) end,
     division = 1
   }
   pattern_b = my_lattice:new_pattern{
-    callback = function(t) print("half notes", t) end,
+    action = function(t) print("half notes", t) end,
     division = 1/2
   }
   pattern_c = my_lattice:new_pattern{
-    callback = function(t) print("quarter notes", t) end,
+    action = function(t) print("quarter notes", t) end,
     division = 1/4
   }
   pattern_d = my_lattice:new_pattern{
-    callback = function(t) print("eighth notes", t) end,
+    action = function(t) print("eighth notes", t) end,
     division = 1/8,
     enabled = false
   }
@@ -65,7 +65,7 @@ function key(k, z)
   -- pattern_a:toggle()
   -- pattern_a:destroy()
   -- pattern_a:set_division(1/7)
-  -- pattern_a:set_callback(function() print("change the callback") end)
+  -- pattern_a:set_action(function() print("change the action") end)
 
 end
 
