@@ -10,24 +10,23 @@ function init()
   -- named params, each optional
   another_lattice = lattice:new{
     auto = false,
-    meter = 5,
     ppqn = 128
   }
 
-  -- make some patterns
-  pattern_a = my_lattice:new_pattern{
+  -- make some sprockets
+  sprocket_a = my_lattice:new_sprocket{
     action = function(t) print("whole notes", t) end,
     division = 1
   }
-  pattern_b = my_lattice:new_pattern{
+  sprocket_b = my_lattice:new_sprocket{
     action = function(t) print("half notes", t) end,
     division = 1/2
   }
-  pattern_c = my_lattice:new_pattern{
+  sprocket_c = my_lattice:new_sprocket{
     action = function(t) print("quarter notes", t) end,
     division = 1/4
   }
-  pattern_d = my_lattice:new_pattern{
+  sprocket_d = my_lattice:new_sprocket{
     action = function(t) print("eighth notes", t) end,
     division = 1/8,
     enabled = false
@@ -44,10 +43,10 @@ end
 function key(k, z)
   if z == 0 then return end
   if k == 2 then
-    pattern_a:toggle()
-    pattern_b:toggle()
+    sprocket_a:toggle()
+    sprocket_b:toggle()
   elseif k == 3 then
-    pattern_c:toggle()
+    sprocket_c:toggle()
   end
 
   -- more api
@@ -57,15 +56,14 @@ function key(k, z)
   -- my_lattice:start()
   -- my_lattice:toggle()
   -- my_lattice:destroy()
-  -- my_lattice:set_meter(7)
 
-  -- individual pattern controls
-  -- pattern_a:stop()
-  -- pattern_a:start()
-  -- pattern_a:toggle()
-  -- pattern_a:destroy()
-  -- pattern_a:set_division(1/7)
-  -- pattern_a:set_action(function() print("change the action") end)
+  -- individual sprocket controls
+  -- sprocket_a:stop()
+  -- sprocket_a:start()
+  -- sprocket_a:toggle()
+  -- sprocket_a:destroy()
+  -- sprocket_a:set_division(1/7)
+  -- sprocket_a:set_action(function() print("change the action") end)
 
 end
 

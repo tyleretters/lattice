@@ -1,28 +1,30 @@
---- module for creating a lattice of patterns based on a single fast "superclock"
+--- module for creating a lattice of sprockets based on a single fast "superclock"
 --
 -- @module Lattice
--- @release v1.0.0
--- @author tyleretters & ezra
+-- @release v2.0.0
+-- @author tyleretters & ezra & ryleelyman
 
-local Lattice, Pattern = {}, {}
+local Lattice, Sprocket = {}, {}
 
 --- instantiate a new lattice
 -- @tparam[opt] table args optional named attributes are:
 -- - "auto" (boolean) turn off "auto" pulses from the norns clock, defaults to true
--- - "meter" (number) of quarter notes per measure, defaults to 4
 -- - "ppqn" (number) the number of pulses per quarter note of this superclock, defaults to 96
 -- @treturn table a new lattice
 function Lattice:new(args)
   local l = setmetatable({}, { __index = Lattice })
-  local args = args == nil and {} or args
+  args = args == nil and {} or args
   l.auto = args.auto == nil and true or args.auto
-  l.meter = args.meter == nil and 4 or args.meter
   l.ppqn = args.ppqn == nil and 96 or args.ppqn
   l.enabled = false
   l.transport = 0
   l.superclock_id = nil
-  l.pattern_id_counter = 100
-  l.patterns = {}
+  l.sprocket_id_counter = 100
+  l.sprockets = {}
+  -- 5 levels of priority should be plenty tbh
+  for i = 1, 5 do
+      l.sprockets[i] = {}
+  end
   return l
 end
 
@@ -50,13 +52,13 @@ function Lattice:destroy()
   if self.superclock_id ~= nil then
     clock.cancel(self.superclock_id)
   end
-  self.patterns = {}
+  self.sprockets = {}
 end
 
 --- set the meter of the lattice
 -- @tparam number meter the meter the lattice counts
-function Lattice:set_meter(meter)
-  self.meter = meter
+function Lattice:set_meter(_)
+  print("this is deprecated; adjust pattern divisions instead")
 end
 
 --- use the norns clock to pulse
@@ -66,50 +68,58 @@ function Lattice.auto_pulse(s)
     s:pulse()
     clock.sync(1/s.ppqn)
   end
-end 
+end
 
---- advance all patterns in this lattice a single by pulse, call this manually if lattice.auto = false
+--- advance all sprockets in this lattice a single by pulse, call this manually if lattice.auto = false
 function Lattice:pulse()
   if self.enabled then
-    local ppm = self.ppqn * self.meter
-    for id, pattern in pairs(self.patterns) do
-      if pattern.enabled then
-        pattern.phase = pattern.phase + 1
-        if pattern.phase > (pattern.division * ppm) then
-          pattern.phase = pattern.phase - (pattern.division * ppm)
-          pattern.action(self.transport)
+    local ppm = self.ppqn * 4
+    for i = 1, 5 do
+      for _, sprocket in pairs(self.sprockets[i]) do
+        if sprocket.enabled then
+          sprocket.phase = sprocket.phase + 1
+          if sprocket.phase > (sprocket.division * ppm) then
+            sprocket.phase = sprocket.phase - (sprocket.division * ppm)
+            sprocket.action(self.transport)
+          end
+        elseif sprocket.flag then
+          self.sprockets[sprocket.id] = nil
         end
-      elseif pattern.flag then
-        self.patterns[pattern.id] = nil
       end
     end
     self.transport = self.transport + 1
   end
 end
 
---- factory method to add a new pattern to this lattice
+--- factory method to add a new sprocket to this lattice
 -- @tparam[opt] table args optional named attributes are:
 -- - "action" (function) function called on each step of this division
--- - "division" (number) the division of the pattern, defaults to 1/4
--- - "enabled" (boolean) is this pattern enabled, defaults to true
--- @treturn table a new pattern
-function Lattice:new_pattern(args)
-  self.pattern_id_counter = self.pattern_id_counter + 1
-  local args = args == nil and {} or args
-  args.id = self.pattern_id_counter
+-- - "division" (number) the division of the sprocket, defaults to 1/4
+-- - "enabled" (boolean) is this sprocket enabled, defaults to true
+-- @treturn table a new sprocket
+function Lattice:new_sprocket(args)
+  self.sprocket_id_counter = self.sprocket_id_counter + 1
+  args = args == nil and {} or args
+  args.id = self.sprocket_id_counter
   args.action = args.action == nil and function(t) return end or args.action
   args.division = args.division == nil and 1/4 or args.division
   args.enabled = args.enabled == nil and true or args.enabled
-  args.phase_end = args.division * self.ppqn * self.meter
-  local pattern = Pattern:new(args)
-  self.patterns[self.pattern_id_counter] = pattern
-  return pattern
+  args.phase_end = args.division * self.ppqn * 4
+  args.priority = args.priority == nil and 3 or util.clamp(args.priority, 1, 5)
+  local sprocket = Sprocket:new(args)
+  self.sprockets[args.priority][self.sprocket_id_counter] = sprocket
+  return sprocket
 end
 
---- "private" method to instantiate a new pattern, only called by Lattice:new_pattern()
--- @treturn table a new pattern
-function Pattern:new(args)
-  local p = setmetatable({}, { __index = Pattern })
+function Lattice:new_pattern(args)
+    print("new_pattern is deprecated: use new_sprocket instead")
+    return self:new_sprocket(args)
+end
+
+--- "private" method to instantiate a new sprocket, only called by Lattice:new_sprocket()
+-- @treturn table a new sprocket
+function Sprocket:new(args)
+  local p = setmetatable({}, { __index = Sprocket })
   p.id = args.id
   p.division = args.division
   p.action = args.action
@@ -119,36 +129,36 @@ function Pattern:new(args)
   return p
 end
 
---- start the pattern
-function Pattern:start()
+--- start the sprocket
+function Sprocket:start()
   self.enabled = true
 end
 
---- stop the pattern
-function Pattern:stop()
+--- stop the sprocket
+function Sprocket:stop()
   self.enabled = false
 end
 
---- toggle the pattern
-function Pattern:toggle()
+--- toggle the sprocket
+function Sprocket:toggle()
   self.enabled = not self.enabled
 end
 
---- flag the pattern to be destroyed
-function Pattern:destroy()
+--- flag the sprocket to be destroyed
+function Sprocket:destroy()
   self.enabled = false
   self.flag = true
 end
 
---- set the division of the pattern
--- @tparam number n the division of the pattern
-function Pattern:set_division(n)
+--- set the division of the sprocket
+-- @tparam number n the division of the sprocket
+function Sprocket:set_division(n)
    self.division = n
 end
 
---- set the action for this pattern
+--- set the action for this sprocket
 -- @tparam function the action
-function Pattern:set_action(fn)
+function Sprocket:set_action(fn)
   self.action = fn
 end
 
